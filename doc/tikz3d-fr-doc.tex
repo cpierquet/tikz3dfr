@@ -487,6 +487,70 @@ De manière un peu plus spécifique :
 
 \pagebreak
 
+\section{Pavés}
+
+\subsection{Commandes}
+
+\begin{cautionblock}
+Les commandes \textit{simplifiée} et \textit{francisé} pour afficher un pavé (ou un cube !) est  la commande \texttt{\textbackslash PaveTikzTriDim}.
+\end{cautionblock}
+
+\begin{PresCodeTex}{listing only}
+\begin{EnvTikzEspace}[Clés]<options tikz>
+	\PaveTikzTriDim[clés]
+\end{EnvTikzEspace}
+\end{PresCodeTex}
+
+\begin{PresCode}{}
+\begin{EnvTikzEspace}[VueClassique]
+	\PaveTikzTriDim
+\end{EnvTikzEspace}
+\hspace{1cm}
+\begin{EnvTikzEspace}
+	\PaveTikzTriDim
+\end{EnvTikzEspace}
+\end{PresCode}
+
+\subsection{Clés et options}
+
+\begin{tipblock}
+Quelques \Cle{clés} sont disponibles pour cette commande :
+
+\begin{itemize}
+	\item \Cle{Largeur} : largeur du pavé ;\hfill{}défaut \Cle{2}
+	\item \Cle{Profondeur} : profondeur du pavé ;\hfill{}défaut \Cle{1}
+	\item \Cle{Hauteur} : hauteur du pavé ;\hfill{}défaut \Cle{1.25}
+	\item \Cle{Sommets} : liste des sommets (avec délimiteur § !) ;\hfill{}défaut \Cle{A§B§C§D§E§F§G§H}
+	\item \Cle{Math} : booléen pour forcer le mode math des sommets ;\hfill{}défaut \Cle{false}
+	\item \Cle{Epaisseur} : épaisseur des arêtes (en \textit{langage simplifié} \TikZ) ;\hfill{}défaut \Cle{thick}
+	\item \Cle{AffLabel} : booléen pour afficher les noms des sommets ;\hfill{}défaut \Cle{false}
+	\item \Cle{Plein} : booléen pour ne pas afficher les arêtes \textit{invisibles} ;\hfill{}défaut \Cle{false}
+	\item \Cle{Cube} : booléen pour préciser qu'il s'agit d'un cube (seule \Cle{Largeur} est util(isé)e) ;
+	
+	\hfill{}défaut \Cle{false}
+	\item \Cle{Couleur} : couleur des arêtes ; \hfill{}défaut \Cle{black}
+	
+	\item \Cle{CouleurSommets} : couleur des sommets.\hfill{}défaut \Cle{black}
+\end{itemize}
+\vspace*{-\baselineskip}\leavevmode
+\end{tipblock}
+
+\pagebreak
+
+\begin{PresCode}{}
+\begin{EnvTikzEspace}
+	\PaveTikzTriDim[Cube,Largeur=3,Couleur=red,CouleurSommets=blue,AffLabel]
+\end{EnvTikzEspace}
+\end{PresCode}
+
+\begin{PresCode}{}
+\begin{EnvTikzEspace}[VueClassique]<scale=2>
+	\PaveTikzTriDim[Largeur=3,Profondeur=4,Hauteur=2,Plein,Couleur=gray,AffLabel, CouleurSommets=gray]
+\end{EnvTikzEspace}
+\end{PresCode}
+
+\newpage
+
 \part{Empilements de cubes}
 
 \section{Environnement dédié}
