@@ -1,0 +1,314 @@
+% Author     : C. Pierquet
+% licence    : Released under the LaTeX Project Public License v1.3c
+% or later, see http://www.latex-project.org/lppl.txtf
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tikz3d-fr}[2023/05/02 0.1.0 Aide pour l'utilisation de TikZ 3D]
+%0.1.0	Version initiale
+
+%------Packages utiles
+\RequirePackage{tikz}
+\RequirePackage{xstring}
+\RequirePackage{simplekv}
+\RequirePackage{xinttools}
+\RequirePackage{xintexpr}
+\RequirePackage{listofitems}
+%------Librairies tikz
+\usetikzlibrary{calc}
+\usetikzlibrary{babel}
+
+%%------Param3D pour l'environnement
+\defKV[paramstridim]{%
+	UniteX=\xdef\PLTriDimUx{#1},%
+	UniteY=\xdef\PLTriDimUy{#1},%
+	UniteZ=\xdef\PLTriDimUz{#1}
+}
+\setKVdefault[paramstridim]{%
+	UniteX={-15:1cm},%
+	UniteY={20:0.65cm},%
+	UniteZ={90:1cm},%
+	VueClassique=false
+}
+
+\NewDocumentEnvironment{EnvTikzEspace}{ O{} D<>{} }%1=clés,2=paramtikz(comme line join... scale...)
+{
+	\useKVdefault[paramstridim]%
+	\setKV[paramstridim]{#1}%
+	\ifboolKV[paramstridim]{VueClassique}
+		{%
+			\xdef\PLTriDimUx{0:1cm}%
+			\xdef\PLTriDimUy{30:0.5cm}%
+			\xdef\PLTriDimUz{90:1cm}%
+		}{}%
+	\begin{tikzpicture}[x={(\PLTriDimUx)},y={(\PLTriDimUy)},z={(\PLTriDimUz)},#2]
+}
+{
+	\end{tikzpicture}
+}
+
+%%------PaveDroitTikZ
+\defKV[paramspavetridim]{%
+	Largeur=\xdef\PFPaveLgDDD{#1},%
+	Profondeur=\xdef\PFPavePfDDD{#1},%
+	Hauteur=\xdef\PFPaveHtDDD{#1},%
+	Sommets=\def\PFPaveSommetsDDD{#1},%
+	Epaisseur=\xdef\PFPaveThickDDD{#1},%
+	Couleur=\xdef\PFPaveCouleurDDD{#1},%
+	CouleurSommets=\xdef\PFPaveCouleurSommDDD{#1}
+}
+\setKVdefault[paramspavetridim]{%
+	AffLabel=false,%
+	Plein=false,%
+	Largeur=2,%
+	Profondeur=1,%
+	Hauteur=1.25,%
+	Epaisseur=thick,%
+	Sommets=A§B§C§D§E§F§G§H,%
+	Cube=false,%
+	Math=false,%
+	Couleur=black,%
+	CouleurSommets=black
+}
+
+
+\newcommand\PaveTikzTriDim[1][]{%
+	\useKVdefault[paramspavetridim]%
+	\setKV[paramspavetridim]{#1}%
+	\ifboolKV[paramspavetridim]{Cube}
+		{%
+			\xdef\PFPavePfDDD{\PFPaveLgDDD}%
+			\xdef\PFPaveHtDDD{\PFPaveLgDDD}%
+		}{}
+	\setsepchar{§}%
+	\readlist*\PFListeSommets\PFPaveSommetsDDD
+	\itemtomacro\PFListeSommets[1]\PaveA
+	\itemtomacro\PFListeSommets[2]\PaveB
+	\itemtomacro\PFListeSommets[3]\PaveC
+	\itemtomacro\PFListeSommets[4]\PaveD
+	\itemtomacro\PFListeSommets[5]\PaveE
+	\itemtomacro\PFListeSommets[6]\PaveF
+	\itemtomacro\PFListeSommets[7]\PaveG
+	\itemtomacro\PFListeSommets[8]\PaveH
+	%les nœuds du pave
+	\coordinate (\PaveA) at (0,0,0) ;
+	\coordinate (\PaveB) at ({\PFPaveLgDDD},0,0) ;
+	\coordinate (\PaveC) at ({\PFPaveLgDDD},{\PFPavePfDDD},0) ;
+	\coordinate (\PaveD) at (0,{\PFPavePfDDD},0) ;
+	\coordinate (\PaveE) at (0,0,{\PFPaveHtDDD}) ;
+	\coordinate (\PaveF) at ({\PFPaveLgDDD},0,{\PFPaveHtDDD}) ;
+	\coordinate (\PaveG) at ({\PFPaveLgDDD},{\PFPavePfDDD},{\PFPaveHtDDD}) ;
+	\coordinate (\PaveH) at (0,{\PFPavePfDDD},{\PFPaveHtDDD}) ;
+	\ifboolKV[paramspavetridim]{AffLabel}
+		{%
+			\draw (\PaveA) node[below left,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveA$}{\PaveA}} ;
+			\draw (\PaveB) node[below right,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveB$}{\PaveB}} ;
+			\draw (\PaveC) node[above right,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveC$}{\PaveC}} ;
+			\ifboolKV[paramspavetridim]{Plein}
+				{}
+				{%
+					\draw (\PaveD) node[above left,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveD$}{\PaveD}} ;
+				}%
+				\draw (\PaveE) node[below left,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveE$}{\PaveE}} ;
+				\draw (\PaveF) node[below right,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveF$}{\PaveF}} ;
+				\draw (\PaveG) node[above right,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveG$}{\PaveG}} ;
+				\draw (\PaveH) node[above left,\PFPaveCouleurSommDDD] {\ifboolKV[paramspavetridim]{Math}{$\PaveH$}{\PaveH}} ;%
+		}%
+		{}%on affiche rien
+	\ifboolKV[paramspavetridim]{Plein}
+		{}
+		{%
+			\draw[\PFPaveCouleurDDD,dashed,\PFPaveThickDDD,line join=bevel] (\PaveA)--(\PaveD)--(\PaveC) (\PaveD)--(\PaveH) ;%
+		}%
+	\draw[\PFPaveCouleurDDD,\PFPaveThickDDD,line join=bevel] (\PaveE)--(\PaveF)--(\PaveG)--(\PaveH)--cycle ;
+	\draw[\PFPaveCouleurDDD,\PFPaveThickDDD,line join=bevel] (\PaveE)--(\PaveA)--(\PaveB)--(\PaveF)--cycle ;
+	\draw[\PFPaveCouleurDDD,\PFPaveThickDDD,line join=bevel] (\PaveC)--(\PaveG)--(\PaveF)--(\PaveB)--cycle ;
+}
+
+%%------Commandes internes pour les nœuds et points
+\NewDocumentCommand\TransfPosTikz{ m }{%défaut below
+	\def\PosTmpLabel{below}
+	\IfEq{#1}{b}{\def\PosTmpLabel{below}}{}
+	\IfEq{#1}{d}{\def\PosTmpLabel{right}}{}
+	\IfEq{#1}{h}{\def\PosTmpLabel{above}}{}
+	\IfEq{#1}{g}{\def\PosTmpLabel{left}}{}
+	\IfEq{#1}{bg}{\def\PosTmpLabel{below left}}{}
+	\IfEq{#1}{bd}{\def\PosTmpLabel{below right}}{}
+	\IfEq{#1}{hg}{\def\PosTmpLabel{above left}}{}
+	\IfEq{#1}{hd}{\def\PosTmpLabel{above right}}{}
+}
+\tikzset{pics/croix/.style args={#1/#2}{
+		code={
+			\draw[line width={0.5*#1},rotate=#2] (-#1,0) -- (#1,0);
+			\draw[line width={0.5*#1},rotate=#2] (0,-#1) -- (0, #1);
+		}
+	},
+	pics/croix/.default={2pt/0}
+}
+
+%%------Créer/Placer/Nommer Point(s) 3d
+\defKV[TkzTriDimPoint]{%
+	PosLabel=\xdef\TrimDimLabel{#1},%
+	DecalLabel=\xdef\TrimDimDecalLabel{#1},%
+	StyleMarque=\xdef\TrimDimStylePt{#1},%
+	TailleMarque=\xdef\TrimDimtaillePt{#1},%
+	Couleur=\xdef\TrimDimCoul{#1}
+}
+
+\setKVdefault[TkzTriDimPoint]{%
+	PosLabel={b},%
+	DecalLabel=1pt,%
+	StyleMarque=o,%
+	TailleMarque=2pt,%
+	Couleur=black
+}
+
+\NewDocumentCommand\PlacePointEspace{ s O{} m m D<>{#3} }{%
+	%*=label
+	%2=clés
+	%3=nom nœud
+	%4=coordonnées x,y,z
+	%5=label si différent
+	\useKVdefault[TkzTriDimPoint]%
+	\setKV[TkzTriDimPoint]{#2}%
+	\TransfPosTikz{\TrimDimLabel}
+	\coordinate (#3) at (#4) ;
+	\IfBooleanTF{#1}%on désactive le label avec (*)
+		{}%
+		{\draw (#3) node[\TrimDimCoul,\PosTmpLabel=\TrimDimDecalLabel] {#5} ;}%
+}
+
+\NewDocumentCommand\PlacePointsEspace{ s O{} m }{%
+	%*=labels off
+	%2=clés
+	%3=liste nom/coordonnées/pos
+	\useKVdefault[TkzTriDimPoint]%
+	\setKV[TkzTriDimPoint]{#2}%
+	\setsepchar[.]{ ./}%
+	\readlist*\ListePtsEspace{#3}
+	\foreach \i in {1,2,...,\ListePtsEspacelen}
+		{%
+			\IfBooleanTF{#1}%on désactive le label avec (*)
+				{%
+					\PlacePointEspace*[#2]{\ListePtsEspace[\i,1]}{\ListePtsEspace[\i,2]}
+				}%
+				{%
+					\PlacePointEspace[#2,PosLabel={\ListePtsEspace[\i,3]}]{\ListePtsEspace[\i,1]}{\ListePtsEspace[\i,2]}
+				}%
+		}%
+}
+
+\NewDocumentCommand\MarquePointEspace{ O{} m }{%
+	%1=clés
+	%2=nom nœud
+	\useKVdefault[TkzTriDimPoint]%
+	\setKV[TkzTriDimPoint]{#1}%
+	\IfStrEq{\TrimDimStylePt}{o}%
+		{\filldraw[\TrimDimCoul] (#2) circle[radius=\TrimDimtaillePt] ;}{}%
+	\IfStrEq{\TrimDimStylePt}{x}%
+		{\draw[\TrimDimCoul] (#2) pic{croix=\TrimDimtaillePt/45} ;}{}%
+}
+
+\NewDocumentCommand\MarquePointsEspace{ O{} m }{%
+	%1=clés
+	%2=liste nom/coordonnées/pos
+	\useKVdefault[TkzTriDimPoint]%
+	\setKV[TkzTriDimPoint]{#1}%
+	\foreach \i in {#2}
+		{%
+			\MarquePointEspace[#1]{\i}
+		}%
+}
+
+%%------Créer Segment(s) 3d
+\NewDocumentCommand\TraceSegmentEspace{ O{} r() r() }{%1=optionstikz,2=A,3=B
+	\draw[#1] (#2)--(#3) ;
+}
+
+\NewDocumentCommand\TraceSegmentsEspace{ O{} m }{%1=optionstikz,2=liste A/B C/D
+	\setsepchar[.]{ ./}%
+	\readlist*\ListePtsEspace{#2}
+	\foreach \i in {1,2,...,\ListePtsEspacelen}
+		{\draw[#1] (\ListePtsEspace[\i,1])--(\ListePtsEspace[\i,2]) ;}
+}
+
+%--Petits Cubes
+%%------EmpilementCubes
+\NewDocumentEnvironment{EmpilementCubes}{ O{1} D<>{} }%
+{
+	\begin{tikzpicture}[x={(-160:0.5cm)},y={(-25:0.45cm)},z={(90:0.5cm)},scale=#1,#2]
+}
+{
+	\end{tikzpicture}
+}
+
+\NewDocumentCommand\PetitCube{ O{cyan} m }{%
+	\StrBefore[1]{#2}{,}[\xtmp]%
+	\StrBetween[1,2]{#2}{,}{,}[\ytmp]%
+	\StrBehind[2]{#2}{,}[\ztmp]%
+	\draw[fill=#1!70,very thin,line join=bevel] ({\xtmp+1},\ytmp,\ztmp)--++(0,1,0)--++(0,0,-1)--++(0,-1,0)--cycle;
+	\draw[fill=#1!80,very thin,line join=bevel] (\xtmp,{\ytmp+1},\ztmp)--++(1,0,0)--++(0,0,-1)--++(-1,0,0)--cycle; 
+	\draw[fill=#1!35!white,very thin,line join=bevel] (\xtmp,\ytmp,\ztmp)--++(1,0,0)--++(0,1,0)--++(-1,0,0)--cycle;
+}
+
+\newcounter{lgblocs}%compteur des lignes, qui sera incrémenté
+\NewDocumentCommand\PlaqueVide{ O{1} }{\addtocounter{lgblocs}{#1}}%passer une plaque
+\NewDocumentCommand\PlaquePetitsCubes{ O{cyan} m }{%poser un cube (attention à l'ordre)
+	\setsepchar[.]{/}
+	%lecture des couleurs
+	\readlist*\ListeCouleurs{#1}
+	%code
+	\readlist*\ListeTraitee{#2}
+	\def\hauteur{\ListeTraiteelen}
+	\addtocounter{lgblocs}{1}
+	\def\y{\thelgblocs}
+	\foreach \i in {1,...,\ListeTraiteelen}%
+		{%
+			%on stocke la ligne à afficher en hauteur
+			\itemtomacro\ListeTraitee[\i]{\lignetmp}
+			%on stocke le nombre de colonnes à afficher
+			\StrLen{\lignetmp}[\colonnetmp]
+			\foreach \j in {\colonnetmp,...,1}%
+				{%
+					\StrChar{\lignetmp}{\j}[\elementtmp]
+					\IfStrEq{\elementtmp}{-}%
+						{}%
+						{%
+							\itemtomacro\ListeCouleurs[\elementtmp]{\elementcouleur}
+							\PetitCube[\elementcouleur]{-\j,\y,\i}
+						}%
+				}%
+		}%
+}
+
+\NewDocumentCommand\BlocPetitsCubes{ s O{cyan} m }{%
+	%*pour autonome
+	%2=couleur unique
+	%3=liste des hauteurs (attention à l'ordre)
+	\setsepchar[.]{/.,}
+	\readlist*\ListeTraitee{#3}
+	\def\Largeur{\ListeTraiteelen}
+	%on lit la Profondeur
+	\itemtomacro\ListeTraitee[1]{\ListeTMP}
+	\setsepchar{,}
+	\readlist*\ListeTraiteeB{\ListeTMP}
+	\def\Profondeur{\ListeTraiteeBlen}
+	\IfBooleanTF{#1}
+		{}
+		{\begin{EnvTikzEspace}[UniteX={-160:0.5cm},UniteY={-25:0.45cm},UniteZ={90:0.5cm}]}
+	%Placement des cubes
+	\foreach \y in {1,...,\Largeur}%
+		{%
+			\foreach \x in {\Profondeur,...,1}
+			{%
+				\itemtomacro\ListeTraitee[\y,\x]{\Hauteur}
+				\xintifboolexpr{\Hauteur == 0}%
+					{}%
+					{%
+						\foreach \z in {1,...,\Hauteur}{\PetitCube[#2]{-\x,\y,\z}}
+					}%
+			}%
+		}%
+	\IfBooleanTF{#1}
+		{}
+		{\end{EnvTikzEspace}}
+}
