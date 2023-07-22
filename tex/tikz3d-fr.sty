@@ -3,7 +3,9 @@
 % or later, see http://www.latex-project.org/lppl.txtf
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{tikz3d-fr}[2023/05/02 0.1.0 Aide pour l'utilisation de TikZ 3D]
+\ProvidesPackage{tikz3d-fr}[2023/07/22 0.1.2 Aide pour l'utilisation de TikZ 3D]
+%0.1.2	Option pour l'épaisseur des traits + [line join=round] pour les cubes
+%0.1.1	Segments avec [line cap=round]
 %0.1.0	Version initiale
 
 %------Packages utiles
@@ -15,7 +17,7 @@
 \RequirePackage{listofitems}
 %------Librairies tikz
 \usetikzlibrary{calc}
-\usetikzlibrary{babel}
+%\usetikzlibrary{babel}
 
 %%------Param3D pour l'environnement
 \defKV[paramstridim]{%
@@ -46,6 +48,20 @@
 	\end{tikzpicture}
 }
 
+\NewDocumentCommand\VecteursBase{ O{3} }{%
+	\IfEq{#1}{3}%
+		{%
+			\draw[->,>=latex] (0,0,0) -- (1,0,0) node[pos=1.1]{x};
+			\draw[->,>=latex] (0,0,0) -- (0,1,0) node[pos=1.1]{y};
+			\draw[->,>=latex] (0,0,0) -- (0,0,1) node[pos=1.1]{z};
+		}{}%
+	\IfEq{#1}{2}%
+		{%
+			\draw[->,>=latex] (0,0,0) -- (1,0,0) node[pos=1.1]{x};
+			\draw[->,>=latex] (0,0,0) -- (0,1,0) node[pos=1.1]{y};
+		}{}%
+}
+
 %%------PaveDroitTikZ
 \defKV[paramspavetridim]{%
 	Largeur=\xdef\PFPaveLgDDD{#1},%
@@ -70,8 +86,7 @@
 	CouleurSommets=black
 }
 
-
-\newcommand\PaveTikzTriDim[1][]{%
+\NewDocumentCommand\PaveTikzTriDim{ O{} }{%
 	\useKVdefault[paramspavetridim]%
 	\setKV[paramspavetridim]{#1}%
 	\ifboolKV[paramspavetridim]{Cube}
@@ -221,14 +236,14 @@
 
 %%------Créer Segment(s) 3d
 \NewDocumentCommand\TraceSegmentEspace{ O{} r() r() }{%1=optionstikz,2=A,3=B
-	\draw[#1] (#2)--(#3) ;
+	\draw[#1,line cap=round] (#2)--(#3) ;
 }
 
 \NewDocumentCommand\TraceSegmentsEspace{ O{} m }{%1=optionstikz,2=liste A/B C/D
 	\setsepchar[.]{ ./}%
 	\readlist*\ListePtsEspace{#2}
 	\foreach \i in {1,2,...,\ListePtsEspacelen}
-		{\draw[#1] (\ListePtsEspace[\i,1])--(\ListePtsEspace[\i,2]) ;}
+		{\draw[#1,line cap=round] (\ListePtsEspace[\i,1])--(\ListePtsEspace[\i,2]) ;}
 }
 
 %--Petits Cubes
@@ -241,18 +256,18 @@
 	\end{tikzpicture}
 }
 
-\NewDocumentCommand\PetitCube{ O{cyan} m }{%
-	\StrBefore[1]{#2}{,}[\xtmp]%
-	\StrBetween[1,2]{#2}{,}{,}[\ytmp]%
-	\StrBehind[2]{#2}{,}[\ztmp]%
-	\draw[fill=#1!70,very thin,line join=bevel] ({\xtmp+1},\ytmp,\ztmp)--++(0,1,0)--++(0,0,-1)--++(0,-1,0)--cycle;
-	\draw[fill=#1!80,very thin,line join=bevel] (\xtmp,{\ytmp+1},\ztmp)--++(1,0,0)--++(0,0,-1)--++(-1,0,0)--cycle; 
-	\draw[fill=#1!35!white,very thin,line join=bevel] (\xtmp,\ytmp,\ztmp)--++(1,0,0)--++(0,1,0)--++(-1,0,0)--cycle;
+\NewDocumentCommand\PetitCube{ O{cyan} O{0.2pt} m }{%
+	\StrBefore[1]{#3}{,}[\xtmp]%
+	\StrBetween[1,2]{#3}{,}{,}[\ytmp]%
+	\StrBehind[2]{#3}{,}[\ztmp]%
+	\draw[fill=#1!70,line width=#2,line join=round,line cap=round] ({\xtmp+1},\ytmp,\ztmp)--++(0,1,0)--++(0,0,-1)--++(0,-1,0)--cycle;
+	\draw[fill=#1!80,line width=#2,line join=round,line cap=round] (\xtmp,{\ytmp+1},\ztmp)--++(1,0,0)--++(0,0,-1)--++(-1,0,0)--cycle; 
+	\draw[fill=#1!35!white,line width=#2,line join=round,line cap=round] (\xtmp,\ytmp,\ztmp)--++(1,0,0)--++(0,1,0)--++(-1,0,0)--cycle;
 }
 
 \newcounter{lgblocs}%compteur des lignes, qui sera incrémenté
 \NewDocumentCommand\PlaqueVide{ O{1} }{\addtocounter{lgblocs}{#1}}%passer une plaque
-\NewDocumentCommand\PlaquePetitsCubes{ O{cyan} m }{%poser un cube (attention à l'ordre)
+\NewDocumentCommand\PlaquePetitsCubes{ O{cyan} m O{0.2pt} }{%poser un cube (attention à l'ordre)
 	\setsepchar[.]{/}
 	%lecture des couleurs
 	\readlist*\ListeCouleurs{#1}
@@ -274,13 +289,13 @@
 						{}%
 						{%
 							\itemtomacro\ListeCouleurs[\elementtmp]{\elementcouleur}
-							\PetitCube[\elementcouleur]{-\j,\y,\i}
+							\PetitCube[\elementcouleur][#3]{-\j,\y,\i}
 						}%
 				}%
 		}%
 }
 
-\NewDocumentCommand\BlocPetitsCubes{ s O{cyan} m }{%
+\NewDocumentCommand\BlocPetitsCubes{ s O{cyan} m O{0.2pt} }{%
 	%*pour autonome
 	%2=couleur unique
 	%3=liste des hauteurs (attention à l'ordre)
@@ -304,7 +319,7 @@
 				\xintifboolexpr{\Hauteur == 0}%
 					{}%
 					{%
-						\foreach \z in {1,...,\Hauteur}{\PetitCube[#2]{-\x,\y,\z}}
+						\foreach \z in {1,...,\Hauteur}{\PetitCube[#2][#4]{-\x,\y,\z}}
 					}%
 			}%
 		}%
@@ -312,3 +327,5 @@
 		{}
 		{\end{EnvTikzEspace}}
 }
+
+\endinput
