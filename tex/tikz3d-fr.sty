@@ -3,15 +3,18 @@
 % or later, see http://www.latex-project.org/lppl.txtf
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{tikz3d-fr}[2023/07/22 0.1.2 Aide pour l'utilisation de TikZ 3D]
+\ProvidesPackage{tikz3d-fr}[2024/09/16 0.1.3 Aide pour l'utilisation de TikZ 3D]
+%0.1.3	Dés à jouer en 3D
 %0.1.2	Option pour l'épaisseur des traits + [line join=round] pour les cubes
 %0.1.1	Segments avec [line cap=round]
 %0.1.0	Version initiale
 
 %------Packages utiles
 \RequirePackage{tikz}
+\RequirePackage{tikz-3dplot}
 \RequirePackage{xstring}
 \RequirePackage{simplekv}
+\RequirePackage{randomlist}
 \RequirePackage{xinttools}
 \RequirePackage{xintexpr}
 \RequirePackage{listofitems}
@@ -327,5 +330,259 @@
 		{}
 		{\end{EnvTikzEspace}}
 }
+
+%====DÉS EN 3D
+\newlength{\detridimoffseth}
+\setlength{\detridimoffseth}{0mm}
+
+\defKV[DeTriDim]{%
+	Echelle=\def\detridimscale{#1},%
+	Couleur=\def\detridimcouleur{#1},%
+	EspaceH=\setlength{\detridimoffseth}{#1},%
+	Couleurs=\def\detridimcouleurs{#1},%
+	CouleurPoints=\def\detridimcouleurpts{#1},%
+	Phi=\def\detridimphi{#1},%
+	Theta=\def\detridimtheta{#1},%
+	Vue=\def\deftridimvue{#1},%
+	Origine=\def\deftridimorigin{#1}
+}
+\setKVdefault[DeTriDim]{%
+	Echelle=1,%
+	Couleur=lightgray!25,%
+	CouleurPoints=black,%
+	Hasard=false,%
+	EspaceH={0mm},%
+	Couleurs=lightgray!25,%
+	Phi=110,%
+	Theta=70,%
+	Vue=D,%
+	Origine={(0,0)},%
+	Yams=false
+}
+
+\NewDocumentCommand\FaceDeTriDim{ m }{%
+	%1 = face avec points communs si besoin pour simplifier le code
+	\xintifboolexpr{#1 == 2 'or' #1 == 4 'or' #1 == 5 'or' #1 == 6}%
+		{%
+			\fill[\detridimcouleurpts] (0.5,0.5) circle[radius=1/6] ; % HG
+			\fill[\detridimcouleurpts] (-0.5,-0.5) circle[radius=1/6] ; % BD
+		}%
+		{}%
+	\xintifboolexpr{#1 == 3 'or' #1 == 4 'or' #1 == 5 'or' #1 == 6}%
+		{%
+			\fill[\detridimcouleurpts] (-0.5,0.5) circle[radius=1/6] ; % HD
+			\fill[\detridimcouleurpts] (0.5,-0.5) circle[radius=1/6] ; % BG
+		}%
+		{}%
+	\xintifboolexpr{#1 == 1 'or' #1 == 3 'or' #1 == 5}%
+		{%
+			\fill[\detridimcouleurpts] (0,0) circle[radius=1/6] ; % CENTRE
+		}%
+		{}%
+	\xintifboolexpr{#1 == 6}%
+		{%
+			\fill[\detridimcouleurpts] (0.5,0) circle[radius=1/6] ; % MG
+			\fill[\detridimcouleurpts] (-0.5,0) circle[radius=1/6] ; % MD
+		}%
+		{}%
+}
+
+%liste pour les faces
+\NewList{detridimfaceU}\SetList{detridimfaceU}{2,3,4,5}
+\NewList{detridimfaceD}\SetList{detridimfaceD}{1,3,4,6}
+\NewList{detridimfaceT}\SetList{detridimfaceT}{1,2,6,5}
+\NewList{detridimfaceQ}\SetList{detridimfaceQ}{1,5,6,2}
+\NewList{detridimfaceC}\SetList{detridimfaceC}{1,3,6,4}
+\NewList{detridimfaceS}\SetList{detridimfaceS}{2,4,5,3}
+
+%commande autonome
+\NewDocumentCommand\DeTriDim{ s O{} D<>{} m }{%
+	%* = mode non autonome
+	%1 = clés
+	%2 = options tikzpicture
+	%3 = faces devant/dessus
+	\restoreKV[DeTriDim]%
+	\setKV[DeTriDim]{#2}%
+	%si aléatoire
+	\ifboolKV[DeTriDim]{Hasard}%
+		{%
+			\xdef\detridimfacedevant{\xinteval{randrange(1,7)}}%
+			\xintifboolexpr{\detridimfacedevant == 1}%
+				{%
+					\GetRandomItem{detridimfaceU}{detridimfacedessus}%
+				}%
+				{}%
+			\xintifboolexpr{\detridimfacedevant == 2}%
+				{%
+					\GetRandomItem{detridimfaceD}{detridimfacedessus}%
+				}%
+				{}%
+			\xintifboolexpr{\detridimfacedevant == 3}%
+				{%
+					\GetRandomItem{detridimfaceT}{detridimfacedessus}%
+				}%
+				{}%
+			\xintifboolexpr{\detridimfacedevant == 4}%
+				{%
+					\GetRandomItem{detridimfaceQ}{detridimfacedessus}%
+				}%
+				{}%
+			\xintifboolexpr{\detridimfacedevant == 5}%
+				{%
+					\GetRandomItem{detridimfaceC}{detridimfacedessus}%
+				}%
+				{}%
+			\xintifboolexpr{\detridimfacedevant == 6}%
+				{%
+					\GetRandomItem{detridimfaceS}{detridimfacedessus}%
+				}%
+				{}%
+			\xdef\detridimfaces{\detridimfacedevant/\detridimfacedessus}%
+		}%
+		{%
+			\xdef\detridimfaces{#4}%
+			\StrCut{#4}{/}{\detridimfacedevant}{\detridimfacedessus}%
+		}%
+	\IfStrEq{\deftridimvue}{D}%
+		{%
+			\IfStrEqCase{\detridimfaces}{%
+				{1/2}{\def\detridimfacedroite{3}}%
+				{1/3}{\def\detridimfacedroite{5}}%
+				{1/5}{\def\detridimfacedroite{4}}%
+				{1/4}{\def\detridimfacedroite{2}}%
+				%
+				{2/1}{\def\detridimfacedroite{4}}%
+				{2/4}{\def\detridimfacedroite{6}}%
+				{2/6}{\def\detridimfacedroite{3}}%
+				{2/3}{\def\detridimfacedroite{1}}%
+				%
+				{3/1}{\def\detridimfacedroite{2}}%
+				{3/2}{\def\detridimfacedroite{6}}%
+				{3/6}{\def\detridimfacedroite{5}}%
+				{3/5}{\def\detridimfacedroite{1}}%
+				%
+				{4/1}{\def\detridimfacedroite{5}}%
+				{4/5}{\def\detridimfacedroite{6}}%
+				{4/6}{\def\detridimfacedroite{2}}%
+				{4/2}{\def\detridimfacedroite{1}}%
+				%
+				{5/1}{\def\detridimfacedroite{3}}%
+				{5/3}{\def\detridimfacedroite{6}}%
+				{5/6}{\def\detridimfacedroite{4}}%
+				{5/4}{\def\detridimfacedroite{1}}%
+				%
+				{6/2}{\def\detridimfacedroite{4}}%
+				{6/4}{\def\detridimfacedroite{5}}%
+				{6/5}{\def\detridimfacedroite{3}}%
+				{6/3}{\def\detridimfacedroite{2}}%
+			}%
+		}%
+		{%
+			\IfStrEqCase{\detridimfaces}{%
+				{1/2}{\def\detridimfacedroite{4}}%
+				{1/3}{\def\detridimfacedroite{2}}%
+				{1/5}{\def\detridimfacedroite{3}}%
+				{1/4}{\def\detridimfacedroite{5}}%
+				%
+				{2/1}{\def\detridimfacedroite{3}}%
+				{2/4}{\def\detridimfacedroite{1}}%
+				{2/6}{\def\detridimfacedroite{4}}%
+				{2/3}{\def\detridimfacedroite{6}}%
+				%
+				{3/1}{\def\detridimfacedroite{5}}%
+				{3/2}{\def\detridimfacedroite{1}}%
+				{3/6}{\def\detridimfacedroite{2}}%
+				{3/5}{\def\detridimfacedroite{6}}%
+				%
+				{4/1}{\def\detridimfacedroite{2}}%
+				{4/5}{\def\detridimfacedroite{1}}%
+				{4/6}{\def\detridimfacedroite{5}}%
+				{4/2}{\def\detridimfacedroite{6}}%
+				%
+				{5/1}{\def\detridimfacedroite{3}}%
+				{5/3}{\def\detridimfacedroite{6}}%
+				{5/6}{\def\detridimfacedroite{4}}%
+				{5/4}{\def\detridimfacedroite{1}}%
+				%
+				{6/2}{\def\detridimfacedroite{3}}%
+				{6/4}{\def\detridimfacedroite{2}}%
+				{6/5}{\def\detridimfacedroite{4}}%
+				{6/3}{\def\detridimfacedroite{5}}%
+			}%
+		}%
+	\IfStrEq{\deftridimvue}{D}{\def\tmpdetridimxscale{1}}{\def\tmpdetridimxscale{-1}}%
+	\IfBooleanF{#1}{\begin{tikzpicture}[#3]}%
+	\tdplotsetmaincoords{\detridimtheta}{\detridimphi}
+		\begin{scope}[shift={(\deftridimorigin)},scale=\fpeval{0.5*\detridimscale},xscale=\tmpdetridimxscale,thick,tdplot_main_coords,rounded corners=\fpeval{\detridimscale*0.5*0.33}cm,fill=\detridimcouleur]
+			\begin{scope}[canvas is xy plane at z=-1]
+				\filldraw (-1,-1) rectangle (1,1);
+			\end{scope}
+			\begin{scope}[canvas is xz plane at y=-1]
+				\filldraw (-1,-1) rectangle (1,1);
+			\end{scope}
+			\begin{scope}[canvas is yz plane at x=-1]
+				\filldraw (-1,-1) rectangle (1,1);
+			\end{scope}
+			\begin{scope}[canvas is xy plane at z=1]%face du dessus
+				\filldraw (-1,-1) rectangle (1,1);
+				\FaceDeTriDim{\detridimfacedessus}
+			\end{scope}
+			\begin{scope}[canvas is xz plane at y=1]%face de droite
+				\filldraw (-1,-1) rectangle (1,1);
+				\FaceDeTriDim{\detridimfacedroite}
+			\end{scope}
+			\begin{scope}[canvas is yz plane at x=1]%face de devant
+				\filldraw (-1,-1) rectangle (1,1);
+				\FaceDeTriDim{\detridimfacedevant}
+			\end{scope}
+		\end{scope}
+	\IfBooleanF{#1}{\end{tikzpicture}}%
+}
+
+\NewDocumentCommand\TirageAleaDesTriDim{ O{} D<>{} m }{%
+	\restoreKV[DeTriDim]%
+	\setKV[DeTriDim]{#1}%
+	\readlist*\detridimlstcolors{\detridimcouleurs}%
+	\ifboolKV[DeTriDim]{Yams}%
+	{%
+		\begin{tikzpicture}[#2]
+			\ifnum\detridimlstcolorslen=1\relax
+			\foreach \i in {1,...,#3}{%
+				\IfStrEq{\deftridimvue}{D}%
+					{%
+						\DeTriDim*[#1,Hasard,Couleur=\detridimcouleurs,Origine={(\i*\detridimscale,-\i*\detridimscale*0.1)}]{}%
+					}%
+					{%
+						\DeTriDim*[#1,Hasard,Couleur=\detridimcouleurs,Origine={(-\i*\detridimscale,-\i*\detridimscale*0.1)}]{}%
+					}%
+			}%
+			\else%
+			\foreach \i in {1,...,#3}{%
+				\itemtomacro\detridimlstcolors[\i]{\tmpdetridimcolor}%
+				\IfStrEq{\deftridimvue}{D}%
+					{%
+						\DeTriDim*[#1,Hasard,Couleur=\tmpdetridimcolor,Origine={(\i*\detridimscale,-\i*\detridimscale*0.1)}]{}%
+					}%
+					{%
+						\DeTriDim*[#1,Hasard,Couleur=\tmpdetridimcolor,Origine={(-\i*\detridimscale,-\i*\detridimscale*0.1)}]{}%
+					}%
+			}%
+			\fi%
+		\end{tikzpicture}
+	}%
+	{%
+		\ifnum\detridimlstcolorslen=1\relax
+		\foreach \i in {1,...,#3}{%
+			\DeTriDim[#1,Hasard,Couleur=\detridimcouleurs]<#2>{}\ifnum\i<#3\relax\hspace*{\detridimoffseth}\fi%
+		}%
+		\else%
+		\foreach \i in {1,...,#3}{%
+			\itemtomacro\detridimlstcolors[\i]{\tmpdetridimcolor}%
+			\DeTriDim[#1,Hasard,Couleur=\tmpdetridimcolor]<#2>{}\ifnum\i<#3\relax\hspace*{\detridimoffseth}\fi%
+		}%
+		\fi%
+	}%
+}
+
 
 \endinput

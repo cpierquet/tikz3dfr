@@ -4,8 +4,8 @@
 
 \documentclass[french,a4paper,11pt]{article}
 \usepackage[margin=2cm,includefoot]{geometry}
-\def\TPversion{0.1.2}
-\def\TPdate{22 juillet 2023}
+\def\TPversion{0.1.3}
+\def\TPdate{16 septembre 2024}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -16,6 +16,7 @@
 \makesavenoteenv{tabular}
 \usepackage{enumitem}
 \usepackage{tabularray}
+\UseTblrLibrary{diagbox}
 \usepackage{fancyvrb}
 \usepackage{fancyhdr}
 \fancyhf{}
@@ -206,6 +207,7 @@
 	
 	\vspace*{-2cm}
 	
+	\def\listecouleursdes{red!25,blue!25,yellow!25,orange!25,green!25}\TirageAleaDesTriDim[EspaceH=-2mm]{5}
 	\hfill
 	\begin{EmpilementCubes}
 		\PlaquePetitsCubes[cyan/red/green/yellow]{ 3111-1-4 / 233123 / 2-1112 }
@@ -242,9 +244,11 @@
 
 \tableofcontents
 
-\vfill
+\pagebreak
 
 \part{Historique}
+
+\verb|v0.1.3|~:~~~~Affichage de dés en 3d (avec aléatoire possible)
 
 \verb|v0.1.2|~:~~~~Option pour l'épaisseur des traits + \textsf{[line join=round]} pour les cubes
 
@@ -252,7 +256,7 @@
 
 \verb|v0.1.0|~:~~~~Version initiale
 
-\newpage
+\pagebreak
 
 \part{Introduction}
 
@@ -268,7 +272,8 @@ Le package propose des commandes basiques -- et francisées -- pour travailler s
 	\item une commande pour tracer et personnaliser un cube ;
 	\item des commandes pour créer/afficher/nommer des points de l'espace ;
 	\item des commandes pour tracer un ou plusieurs segments ;
-	\item des commandes et un environnement pour travailler sur des \textit{empilements} de cubes.
+	\item des commandes et un environnement pour travailler sur des \textit{empilements} de cubes ;
+	\item des commandes pour représenter des dés en perspective (avec aléatoire possible).
 \end{itemize}
 \vspace*{-\baselineskip}\leavevmode
 \end{noteblock}
@@ -297,8 +302,8 @@ Il n'existe pas d'option pour le package, et \texttt{xcolor} n'est pas chargé.
 \textsf{tikz3d-fr} charge les packages suivantes :
 
 \begin{itemize}
-	\item \texttt{tikz}, \texttt{xstring}, \texttt{xintexpr}, \texttt{simplekv} et \texttt{xinttools} et \texttt{listofitems} ;
-	\item les librairies \texttt{\textit{tikz}.calc} et \texttt{\textit{tikz}.babel}.
+	\item \texttt{tikz}, \texttt{xstring}, \texttt{xintexpr}, \texttt{simplekv} et \texttt{xinttools} et \texttt{listofitems}, \texttt{tikz-3dplot} et \texttt{randomlist}  ;
+	\item la librairie \texttt{\textit{tikz}.calc}.
 \end{itemize}
 
 Il est compatible avec les compilations usuelles en \textsf{latex}, \textsf{pdflatex}, \textsf{lualatex} ou \textsf{xelatex}.
@@ -757,5 +762,145 @@ Par exemple, la \textit{grille} associée à l'empilement précédent est :
 	\BlocPetitsCubes*[violet]{1,2,3,4,5 / 0,2,1,1,3 / 0,2,1,1,2 / 1,1,1,1,1}[0.8pt]
 \end{EmpilementCubes}
 \end{PresCode}
+
+\newpage
+
+\part{Dés à jouer, en 3D}
+
+\section{Fonctionnement global}
+
+\begin{tipblock}
+L'idée est de proposer des commandes pour travailler avec des dés, en 3D, avec possibilité de les \textit{lancer} de manière aléatoire.
+
+\smallskip
+
+La commande peut être autonome pour afficher dé par dé, mais elle peut être également à intégrer dans un environnement \texttt{tikzpicture}.
+\end{tipblock}
+
+\begin{importantblock}
+Par défaut, les dés ont une hauteur proche de 1~cm (sans la perspective).
+
+\smallskip
+
+L'orientation est \textit{globalement} fixée, mais il est possible (dans une certaine mesure) de pivoter les dés (suivants les angles $\theta$ et $\phi$ des coordonnées sphériques).
+
+\smallskip
+
+Il est également possible de spécifier un \textit{angle de vue}, droite ou gauche.
+\end{importantblock}
+
+
+\begin{PresCodeTex}{listing only}
+%affichage indépendant
+\DeTriDim[clés]{numéro(s)}
+\end{PresCodeTex}
+
+\begin{PresCodeTex}{listing only}
+%affichage dans un environnement
+\begin{tikzpicture}
+	\DeTriDim*[clés]{numéro(s)}
+\end{tikzpicture}
+\end{PresCodeTex}
+
+\begin{PresCodeTex}{listing only}
+%tirages aléatoires
+\TirageAleaDesTriDim[clés]{tirages}
+\end{PresCodeTex}
+
+\begin{PresCode}{}
+\DeTriDim{6/2}~\DeTriDim{1/5}~\DeTriDim{6/4}~\DeTriDim{3/2}
+\end{PresCode}
+
+\begin{PresCode}{}
+\begin{tikzpicture}
+	%\tdplotsetmaincoords{70}{110}
+	\DeTriDim*[Echelle=2]{6/2}
+	\DeTriDim*[Echelle=2,Origine={(2,-0.2)}]{6/5}
+	\DeTriDim*[Echelle=2,Origine={(4,-0.4)},]{6/3}
+	\DeTriDim*[Echelle=2,Origine={(6,-0.6)},Hasard]{}
+\end{tikzpicture}
+\end{PresCode}
+
+\begin{PresCode}{}
+\TirageAleaDesTriDim[Vue=G,Yams,Echelle=3,Couleurs={red!25,blue!25,yellow!25}]{3}
+\end{PresCode}
+
+\section{Influence des paramètres}
+
+\subsection{Clés et options}
+
+\begin{tipblock}
+Quelques \Cle{clés} sont disponibles pour cette commande (elles ne sont pas toutes utilisées par les toutes les commandes) :
+
+\begin{itemize}
+	\item \Cle{Echelle} : échelle pour modifier la taille ;\hfill{}défaut \Cle{1}
+	\item \Cle{Couleur} : couleur (individuelle) ;\hfill{}défaut \Cle{lightgray!25}
+	\item \Cle{CouleurPoints} : couleurs des points ;\hfill{}défaut \Cle{black}
+	\item \Cle{Phi} : angle $\phi$ de la perpective ;\hfill{}défaut \Cle{110}
+	\item \Cle{Theta} : angle $\theta$ de la perpective ;\hfill{}défaut \Cle{70}
+	\item \Cle{Vue} : vue de la perspective (\texttt{D/G}) ;\hfill{}défaut \Cle{D}
+	\item \Cle{Hasard} : booléen pour un tirage aléatoire ;\hfill{}défaut \Cle{false}
+	\item \Cle{Origine} : origine du dé pour la version \texttt{tikzpicture} ;
+	\item en ce qui concerne les clés spécifiques au tirage :
+	\begin{itemize}
+		\item \Cle{EspaceH} : espace horizontal entre les dés ;\hfill{}défaut \Cle{0mm}
+		\item \Cle{Couleurs} : liste des couleurs pour les dés ;\hfill{}défaut \Cle{lightgray!25}
+		\item \Cle{Yams} : booléen pour forcer un affichage en ligne.\hfill{}défaut \Cle{false}
+	\end{itemize}
+\end{itemize}
+
+Hormis dans le cas où \texttt{Harsard=true}, l'argument obligatoire, pour l'affichage unique, est à donner sous la forme \texttt{face de devant/face du dessus} (l'autre face visible est déterminée automatiquement).
+\end{tipblock}
+
+\subsection{Exemples}
+
+\begin{PresCode}{}
+\TirageAleaDesTriDim[EspaceH=-2mm]{5}
+
+\TirageAleaDesTriDim[EspaceH=1mm,Echelle=2,Couleurs=darkgray,CouleurPoints=white]{5}
+\end{PresCode}
+
+\begin{PresCode}{}
+\def\listecouleursdes{red!25,blue!25,yellow!25,orange!25,green!25}
+
+\TirageAleaDesTriDim[Yams,Couleurs=brown!10]{10}
+
+\TirageAleaDesTriDim[Yams,Echelle=2,Couleurs=\listecouleursdes,CouleurPoints=magenta]{5}
+
+\TirageAleaDesTriDim[Vue=G,Yams,Echelle=3,Couleurs=\listecouleursdes]{3}
+\end{PresCode}
+
+\subsection{Angles de rotation}
+
+\begin{cautionblock}
+Les paramètres $\theta$ et $\phi$ peuvent être modifiés, en fonction du rendu souhaité.
+
+Mais comme toutes les faces ne sont pas traitées (du fait de la perspective), il est conseillé de rester dans une \textit{fenêtre classique}.
+\end{cautionblock}
+
+\begin{tipblock}
+Vue \texttt{D} :
+
+\begin{tblr}{hlines,vlines,colspec={*{5}{Q[m,c]}}}
+	\diagbox{$\phi$}{$\theta$} & 60 & \textbf{70} & 80 & 85 \\
+	95 & \DeTriDim[Hasard,Theta=60,Phi=95]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=70,Phi=95]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=80,Phi=95]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=85,Phi=95]<baseline=0pt>{} \\
+	100 & \DeTriDim[Hasard,Theta=60,Phi=100]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=70,Phi=100]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=80,Phi=100]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=85,Phi=100]<baseline=0pt>{} \\
+	\textbf{110} & \DeTriDim[Hasard,Theta=60,Phi=95]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=70,Phi=110,Couleur=red!25]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=80,Phi=110]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=85,Phi=110]<baseline=0pt>{} \\
+	120 & \DeTriDim[Hasard,Theta=60,Phi=120]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=70,Phi=120]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=80,Phi=120]<baseline=0pt>{} & \DeTriDim[Hasard,Theta=85,Phi=120]<baseline=0pt>{} \\
+\end{tblr}
+\end{tipblock}
+
+\begin{tipblock}
+Vue \texttt{G} :
+
+\begin{tblr}{hlines,vlines,colspec={*{5}{Q[m,c]}}}
+	\diagbox{$\phi$}{$\theta$} & 60 & \textbf{70} & 80 & 85 \\
+	95 & \DeTriDim[Vue=G,Hasard,Theta=60,Phi=95]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=70,Phi=95]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=80,Phi=95]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=85,Phi=95]<baseline=0pt>{} \\
+	100 & \DeTriDim[Vue=G,Hasard,Theta=60,Phi=100]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=70,Phi=100]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=80,Phi=100]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=85,Phi=100]<baseline=0pt>{} \\
+	\textbf{110} & \DeTriDim[Vue=G,Hasard,Theta=60,Phi=95]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=70,Phi=110,Couleur=red!25]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=80,Phi=110]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=85,Phi=110]<baseline=0pt>{} \\
+	120 & \DeTriDim[Vue=G,Hasard,Theta=60,Phi=120]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=70,Phi=120]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=80,Phi=120]<baseline=0pt>{} & \DeTriDim[Vue=G,Hasard,Theta=85,Phi=120]<baseline=0pt>{} \\
+\end{tblr}
+\end{tipblock}
+
 
 \end{document}
